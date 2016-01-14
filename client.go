@@ -10,7 +10,7 @@ import (
 type Client struct {
 	Id   string
 	conn *net.UDPConn
-	ni   *ClientNI
+	ni   *NetworkInfo
 	//UDP resend time to ensure UDP socket lost
 	UDPResend int
 }
@@ -34,7 +34,7 @@ func (c *Client) ConnectTo(srvAddr string) error {
 
 	c.conn = Conn
 
-	c.ni = NewClientNI()
+	c.ni = NewNI()
 	c.ni.InitNetworkInfo(c.conn.LocalAddr().String())
 	return nil
 }

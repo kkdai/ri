@@ -7,17 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
-)
-
-type NATType int
-
-const (
-	NAT_NotAvailiable  NATType = iota
-	NAT_FullCone       NATType = iota
-	NAT_IPRestricted   NATType = iota
-	NAT_PortRestricted NATType = iota
-	NAT_Symmetric      NATType = iota
 )
 
 const (
@@ -49,10 +40,28 @@ func GetNetworkMask(deviceName string) string {
 		//return 255.255.255.0 as default
 		return "255.255.255.0"
 	}
-	return "255.255.255.0"
 }
 
-func EncodeRoutingInfo(id string, n *ClientNI) string {
+func DecodeIpPort(localAddr string) (string, int) {
+	if len(localAddr) <= 0 {
+		return "", 0
+	}
+
+	ip := localAddr[:strings.Index(localAddr, ":")]
+	log.Println("ip:", ip)
+
+	//Get Port
+	iport := localAddr[strings.Index(localAddr, ":")+1:]
+	log.Println("port:", iport)
+	nPort, err := strconv.Atoi(iport)
+	if err != nil {
+		return "", 0
+	}
+
+	return ip, nPort
+}
+
+func EncodeRoutingInfo(id string, n *NetworkInfo) string {
 	if n == nil {
 		return ""
 	}
@@ -60,20 +69,27 @@ func EncodeRoutingInfo(id string, n *ClientNI) string {
 	return fmt.Sprintf("%s %s,%s,%s,%d,%s", CMD_RoutingInfo, id, n.IIPv4, n.IIPv6, n.IPort, n.INetmask)
 }
 
-func DecodeRoutingInfo(ri string) error {
-	if len(ri) == 0 || !strings.Contains(ri, CMD_RequestPairing) {
-		return errors.New("Invalid Input.")
+func DecodeRoutingInfo(ri string) (*NetworkInfo, error) {
+	log.Println("DecodeRoutingInfo:", ri)
+	if len(ri) == 0 || !strings.Contains(ri, CMD_RoutingInfo) {
+		return nil, errors.New("Invalid Input.")
 	}
 
-	var id, resource, iip4, iip6, imask string
+	var id, iip4, iip6, imask string
 	var iport int
 	ri = strings.Replace(ri, ",", " ", -1)
-	n, err := fmt.Sscanf(ri, CMD_RequestPairing+" %s %s %s %d %s", &id, &iip4, &iip6, &iport, &imask)
+	n, err := fmt.Sscanf(ri, CMD_RoutingInfo+" %s %s %s %d %s", &id, &iip4, &iip6, &iport, &imask)
 	if err != nil {
-		fmt.Println(n, err, id, "-", resource)
-		return err
+		log.Println(n, err)
+		return nil, err
 	}
 
-	fmt.Println("Got:", n, "=>", id, iip4, iip6, imask, iport)
-	return nil
+	log.Println("Got:", n, "=>", id, iip4, iip6, imask, iport)
+	ni := new(NetworkInfo)
+	ni.IIPv4 = iip4
+	ni.IIPv6 = iip6
+	ni.Id = id
+	ni.IPort = iport
+	ni.INetmask = imask
+	return ni, nil
 }

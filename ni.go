@@ -4,33 +4,47 @@ import (
 	"errors"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 )
 
-type ClientNI struct {
+type NetworkInfo struct {
+	Id string
+
+	EIPv4 string
+	EPort int
+
 	IIPv4    string
 	IIPv6    string
 	IPort    int
 	INetmask string
 }
 
-func NewClientNI() *ClientNI {
-	ni := new(ClientNI)
+func NewNI() *NetworkInfo {
+	ni := new(NetworkInfo)
 	return ni
 }
 
-func (n *ClientNI) InitNetworkInfo(localAddr string) error {
-	err := n.getInternalPort(localAddr)
-	if err != nil {
-		return err
+//Return the NAT type according its Internal IP and Public IP
+func (n *NetworkInfo) UseNAT() bool {
+	return n.IIPv4 == n.EIPv4 && n.IPort == n.EPort
+}
+
+//Check each NAT type and make sure if it is under the same routing.
+//Return "true" if it is not NAT_Symmetric
+func (n *NetworkInfo) ValidToP2P(si *NetworkInfo) bool {
+	return si != nil
+}
+func (n *NetworkInfo) InitNetworkInfo(localAddr string) error {
+	ip, port := DecodeIpPort(localAddr)
+	if len(ip) != 0 {
+		n.IPort = port
 	}
 
-	err = n.enumDevice()
+	err := n.enumDevice()
 	return err
 }
 
-func (n *ClientNI) enumDevice() error {
+func (n *NetworkInfo) enumDevice() error {
 
 	ifaces, err := net.Interfaces()
 	// handle err
@@ -81,21 +95,4 @@ func (n *ClientNI) enumDevice() error {
 	}
 
 	return errors.New("Not find specific IP")
-}
-
-func (n *ClientNI) getInternalPort(localAddr string) error {
-	if len(localAddr) <= 0 {
-		return errors.New("No exist UDP connection.")
-	}
-
-	//Get Port
-	iport := localAddr[strings.Index(localAddr, ":")+1:]
-	log.Println("port:", iport)
-	nPort, err := strconv.Atoi(iport)
-	if err != nil {
-		return err
-	}
-
-	n.IPort = nPort
-	return nil
 }
