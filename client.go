@@ -1,38 +1,56 @@
-package main
+package ri
 
 import (
 	"fmt"
+	"log"
 	"net"
-	"strconv"
 	"time"
 )
 
-func CheckError(err error) {
-	if err != nil {
-		fmt.Println("Error: ", err)
-	}
+type Client struct {
+	Id   string
+	conn *net.UDPConn
+	ni   *ClientNI
+	//UDP resend time to ensure UDP socket lost
+	UDPResend int
 }
 
-func main() {
-	ServerAddr, err := net.ResolveUDPAddr("udp", "127.0.0.1:10001")
-	CheckError(err)
+func NewClient() *Client {
+	c := new(Client)
+	c.UDPResend = 8
+	return c
+}
 
-	LocalAddr, err := net.ResolveUDPAddr("udp", "127.0.0.1:0")
-	CheckError(err)
+func (c *Client) ConnectTo(srvAddr string) error {
+	ServerAddr, err := net.ResolveUDPAddr("udp", "172.16.110.138:8120")
+	if err != nil {
+		return err
+	}
 
-	Conn, err := net.DialUDP("udp", LocalAddr, ServerAddr)
-	CheckError(err)
+	Conn, err := net.DialUDP("udp", nil, ServerAddr)
+	if err != nil {
+		return err
+	}
 
-	defer Conn.Close()
-	i := 0
-	for {
-		msg := strconv.Itoa(i)
-		i++
+	c.conn = Conn
+
+	c.ni = NewClientNI(Conn)
+	c.ni.InitNetworkInfo()
+	return nil
+}
+
+func (c *Client) SendRoutingInfo() error {
+	for i := 0; i < c.UDPResend; i++ {
+		// msg := fmt.Sprintf("RoutingInformation %s/%s,%s,%s,%d,%s", "test1234", "resource", clientNI.IIPv4, clientNI.IIPv6, clientNI.IPort, clientNI.INetmask)
+		msg := EncodeRoutingInfo(c.Id, c.ni)
 		buf := []byte(msg)
-		_, err := Conn.Write(buf)
+		log.Println("write->", msg)
+		_, err := c.conn.Write(buf)
 		if err != nil {
 			fmt.Println(msg, err)
+			return err
 		}
 		time.Sleep(time.Second * 1)
 	}
+	return nil
 }
