@@ -1,6 +1,7 @@
 package ri
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -57,4 +58,22 @@ func EncodeRoutingInfo(id string, n *ClientNI) string {
 	}
 
 	return fmt.Sprintf("%s %s,%s,%s,%d,%s", CMD_RoutingInfo, id, n.IIPv4, n.IIPv6, n.IPort, n.INetmask)
+}
+
+func DecodeRoutingInfo(ri string) error {
+	if len(ri) == 0 || !strings.Contains(ri, CMD_RequestPairing) {
+		return errors.New("Invalid Input.")
+	}
+
+	var id, resource, iip4, iip6, imask string
+	var iport int
+	ri = strings.Replace(ri, ",", " ", -1)
+	n, err := fmt.Sscanf(ri, CMD_RequestPairing+" %s %s %s %d %s", &id, &iip4, &iip6, &iport, &imask)
+	if err != nil {
+		fmt.Println(n, err, id, "-", resource)
+		return err
+	}
+
+	fmt.Println("Got:", n, "=>", id, iip4, iip6, imask, iport)
+	return nil
 }

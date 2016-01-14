@@ -13,18 +13,15 @@ type ClientNI struct {
 	IIPv6    string
 	IPort    int
 	INetmask string
-
-	conn *net.UDPConn
 }
 
-func NewClientNI(conn *net.UDPConn) *ClientNI {
+func NewClientNI() *ClientNI {
 	ni := new(ClientNI)
-	ni.conn = conn
 	return ni
 }
 
-func (n *ClientNI) InitNetworkInfo() error {
-	err := n.findClientNIPort()
+func (n *ClientNI) InitNetworkInfo(localAddr string) error {
+	err := n.getInternalPort(localAddr)
 	if err != nil {
 		return err
 	}
@@ -86,18 +83,13 @@ func (n *ClientNI) enumDevice() error {
 	return errors.New("Not find specific IP")
 }
 
-func (n *ClientNI) findClientNIPort() error {
-	if n.conn == nil || len(n.conn.LocalAddr().String()) <= 0 {
+func (n *ClientNI) getInternalPort(localAddr string) error {
+	if len(localAddr) <= 0 {
 		return errors.New("No exist UDP connection.")
 	}
 
-	log.Println("network:", n.conn.LocalAddr().Network(), " add:", n.conn.LocalAddr().String())
-	//Get IP
-	iip := n.conn.LocalAddr().String()[:strings.Index(n.conn.LocalAddr().String(), ":")]
-	log.Println("ip:", iip)
-
 	//Get Port
-	iport := n.conn.LocalAddr().String()[strings.Index(n.conn.LocalAddr().String(), ":")+1:]
+	iport := localAddr[strings.Index(localAddr, ":")+1:]
 	log.Println("port:", iport)
 	nPort, err := strconv.Atoi(iport)
 	if err != nil {

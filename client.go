@@ -22,7 +22,7 @@ func NewClient() *Client {
 }
 
 func (c *Client) ConnectTo(srvAddr string) error {
-	ServerAddr, err := net.ResolveUDPAddr("udp", "172.16.110.138:8120")
+	ServerAddr, err := net.ResolveUDPAddr("udp", srvAddr)
 	if err != nil {
 		return err
 	}
@@ -34,14 +34,13 @@ func (c *Client) ConnectTo(srvAddr string) error {
 
 	c.conn = Conn
 
-	c.ni = NewClientNI(Conn)
-	c.ni.InitNetworkInfo()
+	c.ni = NewClientNI()
+	c.ni.InitNetworkInfo(c.conn.LocalAddr().String())
 	return nil
 }
 
 func (c *Client) SendRoutingInfo() error {
 	for i := 0; i < c.UDPResend; i++ {
-		// msg := fmt.Sprintf("RoutingInformation %s/%s,%s,%s,%d,%s", "test1234", "resource", clientNI.IIPv4, clientNI.IIPv6, clientNI.IPort, clientNI.INetmask)
 		msg := EncodeRoutingInfo(c.Id, c.ni)
 		buf := []byte(msg)
 		log.Println("write->", msg)
@@ -52,5 +51,6 @@ func (c *Client) SendRoutingInfo() error {
 		}
 		time.Sleep(time.Second * 1)
 	}
+	log.Println("SendRoutingInfo done")
 	return nil
 }
