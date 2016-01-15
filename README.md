@@ -37,7 +37,6 @@ func main() {
 }
 
 //2016/01/14 17:35:57 UDP Server strating listen: :10001
-Received  RoutingInformation test/1234,172.16.110.103,fe80::211:6bff:fe67:1abf,60916,255.255.255.0  from  127.0.0.1:60916
 //2016/01/14 17:35:58 Cmd: RoutingInformation
 //2016/01/14 17:35:58 DecodeRoutingInfo: RoutingInformation test/1234,172.16.110.103,fe80::211:6bff:fe67:1abf,60916,255.255.255.0
 //2016/01/14 17:35:58 Got: 5 => test/1234 172.16.110.103 fe80::211:6bff:fe67:1abf 255.255.255.0 60916
