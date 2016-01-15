@@ -4,7 +4,7 @@ RI: A simple routing information client/server
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/kkdai/ri/master/LICENSE)  [![GoDoc](https://godoc.org/github.com/kkdai/ri?status.svg)](https://godoc.org/github.com/kkdai/ri)  [![Build Status](https://travis-ci.org/kkdai/ri.svg?branch=master)](https://travis-ci.org/kkdai/ri)
     
 
-**RI** is a UDP client/server to get Public and Private IP and Port for firewall penetration
+**RI** is a UDP client/server to get Public and Private IP and Port for routing infromation exchange.
 
 It could get your IPv4 and IPv6 information during client/server communication. It also support get the IPv4 Network Mask.
 

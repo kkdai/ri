@@ -71,9 +71,11 @@ func (s *Server) parseCmds(cmd string, addr string) {
 
 	} else if strings.Contains(cmd, CMD_HolePunching) {
 		log.Println("Cmd:", CMD_HolePunching)
+		//TODO.
 
 	} else if strings.Contains(cmd, CMD_RequestPairing) {
 		log.Println("Cmd:", CMD_RequestPairing)
+		//TODO.
 
 	} else {
 		log.Println("Cmd invalid.")
