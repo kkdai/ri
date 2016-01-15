@@ -36,6 +36,14 @@ func main() {
 	ser.ListenAndServe(":10001")
 }
 
+//2016/01/14 17:35:57 UDP Server strating listen: :10001
+Received  RoutingInformation test/1234,172.16.110.103,fe80::211:6bff:fe67:1abf,60916,255.255.255.0  from  127.0.0.1:60916
+//2016/01/14 17:35:58 Cmd: RoutingInformation
+//2016/01/14 17:35:58 DecodeRoutingInfo: RoutingInformation test/1234,172.16.110.103,fe80::211:6bff:fe67:1abf,60916,255.255.255.0
+//2016/01/14 17:35:58 Got: 5 => test/1234 172.16.110.103 fe80::211:6bff:fe67:1abf 255.255.255.0 60916
+//2016/01/14 17:35:58 ip: 127.0.0.1
+//2016/01/14 17:35:58 port: 60916
+//2016/01/14 17:35:58 RoutingInfo work: &{test/1234 127.0.0.1 60916 172.16.110.103 fe80::211:6bff:fe67:1abf 60916 255.255.255.0}  is it use NAT? false
 ```
 
 #### Client side example
@@ -58,6 +66,13 @@ func main() {
 	c.SendRoutingInfo()
 }
 
+//2016/01/14 17:35:58 ip: 127.0.0.1
+//2016/01/14 17:35:58 port: 60916
+//2016/01/14 17:35:58 netmask= 255.255.255.0  OS= darwin
+//2016/01/14 17:35:58 Find ipv4 mapping: 172.16.110.103 255.255.255.0 en5
+//2016/01/14 17:35:58 write-> RoutingInformation test/1234,172.16.110.103,fe80::211:6bff:fe67:1abf,60916,255.255.255.0
+//2016/01/14 17:35:59 write-> RoutingInformation test/1234,172.16.110.103,fe80::211:6bff:fe67:1abf,60916,255.255.255.0
+//2016/01/14 17:36:00 write-> RoutingInformation test/1234,172.16.110.103,fe80::211:6bff:fe67:1abf,60916,255.255.255.0
 ```
 
 ###Use the binary directly
