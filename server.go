@@ -21,8 +21,10 @@ func NewServer() *Server {
 	return s
 }
 
+type RIUpdateFunc func(ni *NetworkInfo, err error) (retErr error)
+
 //Use ":10001" to listen port 10001
-func (s *Server) ListenAndServe(port string) {
+func (s *Server) ListenAndServe(port string, callback RIUpdateFunc) {
 	ServerAddr, err := net.ResolveUDPAddr("udp", port)
 	if err != nil {
 		log.Println("Server port init error:", err)
@@ -43,16 +45,17 @@ func (s *Server) ListenAndServe(port string) {
 		if err != nil {
 			fmt.Println("Error: ", err)
 		} else {
-			s.parseCmds(string(buf[0:n]), addr.String())
+			s.parseCmds(string(buf[0:n]), addr.String(), callback)
 		}
 	}
 
 }
 
-func (s *Server) routingInfo(cmd, addr string) {
+func (s *Server) routingInfo(cmd, addr string, callback RIUpdateFunc) {
 	ni, err := DecodeRoutingInfo(cmd)
 	if err != nil {
 		log.Println("DecodeRoutingInfo err=", err)
+		callback(nil, err)
 		return
 	}
 
@@ -61,13 +64,14 @@ func (s *Server) routingInfo(cmd, addr string) {
 	ni.EPort = port
 	s.clientDB[ni.Id] = *ni
 	log.Println("RoutingInfo work:", ni, " is it use NAT?", ni.UseNAT())
+	callback(ni, nil)
 }
 
-func (s *Server) parseCmds(cmd string, addr string) {
+func (s *Server) parseCmds(cmd string, addr string, callback RIUpdateFunc) {
 	fmt.Println("Received ", cmd, " from ", addr)
 	if strings.Contains(cmd, CMD_RoutingInfo) {
 		log.Println("Cmd:", CMD_RoutingInfo)
-		s.routingInfo(cmd, addr)
+		s.routingInfo(cmd, addr, callback)
 
 	} else if strings.Contains(cmd, CMD_HolePunching) {
 		log.Println("Cmd:", CMD_HolePunching)
